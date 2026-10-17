@@ -1,0 +1,372 @@
+---
+import App from '../layouts/App.astro';
+import Icon from '../components/Icon.astro';
+import Sheet from '../components/Sheet.astro';
+
+const nav = [
+  { view: 'inicio', label: 'Inicio', icon: 'home' },
+  { view: 'clientes', label: 'Clientes', icon: 'users' },
+  { view: 'historial', label: 'Historial', icon: 'list' },
+];
+const motivos = ['Mezclado con agua', 'Con restos de comida', 'Aceite de motor u otro líquido', 'Envase sin tapa o roto'];
+---
+<App title="Tienda" nav={nav}>
+  <header class="hero">
+    <div class="relative z-10 flex items-center justify-between gap-2">
+      <a href="/" class="grid place-items-center w-9 h-9 rounded-full bg-white/10" aria-label="Cambiar rol"><Icon name="swap" class="w-4 h-4" /></a>
+      <div class="relative">
+        <select id="sel-tienda" class="hero-select" aria-label="Tienda"></select>
+        <Icon name="chevron" class="w-4 h-4 rotate-90 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+      </div>
+    </div>
+    <p class="relative z-10 mt-6 text-white/70 text-sm">Punto de acopio</p>
+    <h1 id="t-nombre" class="relative z-10 text-2xl font-extrabold tracking-tight">—</h1>
+  </header>
+
+  <main class="sheet-body">
+    <!-- INICIO -->
+    <section data-view="inicio">
+      <div class="balance-card">
+        <div class="relative flex items-center justify-between">
+          <span class="text-sm font-semibold text-white/85">Aceite en el bidón</span>
+          <span id="t-estado" class="chip"></span>
+        </div>
+        <p class="relative mt-1 flex items-baseline gap-2">
+          <span id="t-litros" class="text-5xl font-extrabold tracking-tight tabular-nums">0</span>
+          <span id="t-cap" class="text-lg font-bold text-white/80">/ 50 L</span>
+        </p>
+        <div class="relative progress mt-3"><span id="t-bar"></span></div>
+        <div class="relative mt-4 grid grid-cols-3 gap-2 text-center">
+          <div class="rounded-2xl bg-white/12 bg-white/10 py-2"><p id="hoy-litros" class="font-extrabold text-lg">0</p><p class="text-[10px] text-white/75">Litros hoy</p></div>
+          <div class="rounded-2xl bg-white/10 py-2"><p id="hoy-entregas" class="font-extrabold text-lg">0</p><p class="text-[10px] text-white/75">Entregas hoy</p></div>
+          <div class="rounded-2xl bg-white/10 py-2"><p id="hoy-puntos" class="font-extrabold text-lg">0</p><p class="text-[10px] text-white/75">Pts otorgados</p></div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-4 gap-2 mt-5">
+        <button type="button" class="quick" id="q-recibir"><span class="quick-ico !bg-magenta-500 !text-white"><Icon name="drop" class="w-6 h-6" /></span>Recibir aceite</button>
+        <button type="button" class="quick" id="q-canjear"><span class="quick-ico"><Icon name="gift" class="w-6 h-6" /></span>Canjear puntos</button>
+        <button type="button" class="quick" data-open="sh-nuevo"><span class="quick-ico"><Icon name="userplus" class="w-6 h-6" /></span>Cliente nuevo</button>
+        <button type="button" class="quick" id="q-recoleccion"><span class="quick-ico"><Icon name="truck" class="w-6 h-6" /></span>Pedir recolección</button>
+      </div>
+
+      <div class="card mt-5 flex items-center gap-3 !bg-gold-300/30">
+        <span class="grid place-items-center w-11 h-11 rounded-2xl bg-gold-400 text-plum-900 shrink-0"><Icon name="stamp" class="w-6 h-6" /></span>
+        <p class="text-xs text-plum-900 flex-1"><b class="block text-sm">¿Clientes sin celular?</b>Regístralos y entrégales su <b>tarjeta de sellos en PDF</b>. Sellas una casilla por cada litro.</p>
+      </div>
+
+      <h2 class="section-title">Últimas entregas</h2>
+      <ul id="t-movs" class="card !py-1 divide-y divide-plum-50"></ul>
+    </section>
+
+    <!-- CLIENTES -->
+    <section data-view="clientes" class="hidden">
+      <div class="relative">
+        <input id="buscar" class="field !pl-11 !bg-white" placeholder="Buscar por nombre o código" />
+        <Icon name="search" class="w-5 h-5 text-plum-300 absolute left-4 top-1/2 -translate-y-1/2" />
+      </div>
+      <button type="button" class="btn btn-primary w-full mt-3" data-open="sh-nuevo"><Icon name="userplus" /> Registrar cliente nuevo</button>
+      <h2 class="section-title">Clientes</h2>
+      <ul id="clientes" class="card !py-1 divide-y divide-plum-50"></ul>
+    </section>
+
+    <!-- HISTORIAL -->
+    <section data-view="historial" class="hidden">
+      <h2 class="section-title !mt-0">Recolecciones de la recicladora</h2>
+      <ul id="t-recolecciones" class="card !py-1 divide-y divide-plum-50"></ul>
+      <h2 class="section-title">Todos los movimientos</h2>
+      <ul id="t-historial" class="card !py-1 divide-y divide-plum-50"></ul>
+    </section>
+  </main>
+
+  <Fragment slot="sheets">
+    <!-- Recibir aceite -->
+    <Sheet id="sh-recibir" title="Recibir aceite">
+      <form id="f-recibir" class="space-y-4" autocomplete="off">
+        <div>
+          <label class="label" for="rc-codigo">Código o nombre del cliente</label>
+          <input id="rc-codigo" class="field font-mono uppercase" list="dl-clientes" placeholder="GQS-0000" required />
+          <div id="rc-cliente" class="mt-2"></div>
+        </div>
+        <div>
+          <span class="label">Litros entregados</span>
+          <div class="flex items-center gap-3">
+            <button type="button" class="btn btn-soft !p-3" data-step="-0.5" aria-label="Menos"><Icon name="minus" /></button>
+            <input id="rc-litros" type="number" min="0.5" step="0.5" value="1" class="field text-center text-2xl !py-2" />
+            <button type="button" class="btn btn-soft !p-3" data-step="0.5" aria-label="Más"><Icon name="plus" /></button>
+          </div>
+        </div>
+        <div>
+          <span class="label">Revisión del aceite</span>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="cursor-pointer"><input type="radio" name="calidad" value="ok" class="peer sr-only" checked />
+              <span class="btn w-full border-2 border-plum-100 text-plum-700 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700"><Icon name="check" /> Aceptado</span></label>
+            <label class="cursor-pointer"><input type="radio" name="calidad" value="no" class="peer sr-only" />
+              <span class="btn w-full border-2 border-plum-100 text-plum-700 peer-checked:border-red-500 peer-checked:bg-red-50 peer-checked:text-red-600"><Icon name="x" /> Rechazado</span></label>
+          </div>
+          <select id="rc-motivo" class="field mt-2 hidden">
+            {motivos.map(m => <option>{m}</option>)}
+          </select>
+        </div>
+        <p id="rc-resumen" class="rounded-2xl bg-plum-50 p-3 text-sm font-bold text-plum-700 text-center"></p>
+        <button class="btn btn-primary w-full" type="submit">Registrar entrega</button>
+      </form>
+    </Sheet>
+
+    <!-- Canjear -->
+    <Sheet id="sh-canjear" title="Canjear puntos">
+      <label class="label" for="cj-codigo">Código o nombre del cliente</label>
+      <input id="cj-codigo" class="field font-mono uppercase" list="dl-clientes" placeholder="GQS-0000" autocomplete="off" />
+      <div id="cj-cliente" class="mt-2"></div>
+      <div id="cj-productos" class="grid grid-cols-2 gap-2 mt-4"></div>
+    </Sheet>
+
+    <!-- Cliente nuevo -->
+    <Sheet id="sh-nuevo" title="Cliente nuevo">
+      <form id="f-nuevo" class="space-y-4" autocomplete="off">
+        <div><label class="label" for="nv-nombre">Nombre completo</label><input id="nv-nombre" class="field" placeholder="Ej. Doña Carmen Pérez" required /></div>
+        <div><label class="label" for="nv-tel">Teléfono (opcional)</label><input id="nv-tel" class="field" inputmode="tel" placeholder="7000-0000" /></div>
+        <label class="flex items-center gap-3 rounded-2xl bg-gold-300/30 p-3 cursor-pointer">
+          <input id="nv-papel" type="checkbox" class="w-5 h-5 accent-magenta-500" checked />
+          <span class="text-sm text-plum-900"><b class="block">Usará tarjeta de papel</b>Se genera un PDF para imprimir, sellar y firmar.</span>
+        </label>
+        <button class="btn btn-primary w-full" type="submit"><Icon name="userplus" /> Registrar cliente</button>
+      </form>
+    </Sheet>
+
+    <!-- Resultado genérico -->
+    <Sheet id="sh-ok" title="Listo">
+      <div id="ok-body" class="text-center"></div>
+      <button type="button" class="btn btn-dark w-full mt-5" data-close>Continuar</button>
+    </Sheet>
+
+    <datalist id="dl-clientes"></datalist>
+  </Fragment>
+</App>
+
+<script>
+  import {
+    load, pref, tienda, usuario, porCodigo, litrosHoy, litrosDe, registrarEntrega, canjear, nuevoCliente,
+    solicitarRecoleccion, fmtNum, fmtFecha, type Usuario,
+  } from '../lib/store';
+  import { $, $$, esc, initTabs, movRow, vacio, toast, intentar, openSheet, closeSheet } from '../lib/ui';
+  import { icon } from '../lib/icons';
+  import { tarjetaPDF } from '../lib/pdf';
+
+  let db = load();
+  let tid = pref.get('tienda', db.tiendas[0].id);
+  if (!tienda(db, tid)) tid = db.tiendas[0].id;
+
+  const sel = $<HTMLSelectElement>('#sel-tienda');
+  sel.innerHTML = db.tiendas.map(t => `<option value="${t.id}">${esc(t.nombre)}</option>`).join('');
+  sel.value = tid;
+  sel.addEventListener('change', () => { tid = sel.value; pref.set('tienda', tid); render(); });
+
+  /** Busca por código exacto o por nombre (si el texto coincide con un solo cliente). */
+  function buscarCliente(txt: string): Usuario | undefined {
+    const q = txt.trim();
+    if (!q) return;
+    const porCod = porCodigo(db, q);
+    if (porCod) return porCod;
+    const hits = db.usuarios.filter(u => u.nombre.toLowerCase().includes(q.toLowerCase()));
+    return hits.length === 1 ? hits[0] : undefined;
+  }
+
+  const fichaCliente = (u?: Usuario) => u
+    ? `<div class="flex items-center gap-3 rounded-2xl bg-emerald-50 p-3">
+        <span class="grid place-items-center w-10 h-10 rounded-full bg-emerald-500 text-white font-extrabold">${esc(u.nombre[0])}</span>
+        <div class="flex-1 min-w-0 text-left"><p class="font-bold text-sm truncate">${esc(u.nombre)}</p>
+        <p class="text-xs text-gray-500">${u.codigo} · ${u.puntos} pts ${u.tarjetaFisica ? '· 🗂️ tarjeta de papel' : ''}</p></div>
+      </div>`
+    : '';
+
+  function render() {
+    db = load();
+    const t = tienda(db, tid)!;
+    const cap = db.reglas.capacidadBidonTienda;
+    const pct = t.litrosBidon / cap * 100;
+    const hoy = new Date().toISOString().slice(0, 10);
+    const movsT = db.movimientos.filter(m => m.tiendaId === tid).sort((a, b) => b.fecha.localeCompare(a.fecha));
+    const hoyEnt = movsT.filter(m => m.tipo === 'entrega' && m.fecha.startsWith(hoy));
+
+    $('#t-nombre').textContent = t.nombre;
+    $('#t-litros').textContent = fmtNum(t.litrosBidon);
+    $('#t-cap').textContent = `/ ${cap} L`;
+    $('#t-bar').style.width = Math.min(100, pct) + '%';
+    const est = $('#t-estado');
+    est.className = 'chip ' + (t.recoleccionSolicitada ? 'bg-gold-400 text-plum-900' : 'bg-white/15 text-white');
+    est.innerHTML = t.recoleccionSolicitada ? icon('truck', 'w-3.5 h-3.5') + ' Recolección pedida' : 'Recibiendo';
+    $('#hoy-litros').textContent = fmtNum(hoyEnt.reduce((s, m) => s + m.litros, 0));
+    $('#hoy-entregas').textContent = String(hoyEnt.length);
+    $('#hoy-puntos').textContent = String(hoyEnt.reduce((s, m) => s + m.puntos, 0));
+
+    const nombreDe = (id: string) => usuario(db, id)?.nombre ?? '—';
+    const movsHTML = (lista: typeof movsT) => lista.map(m => movRow(m, `${nombreDe(m.usuarioId)} · ${fmtFecha(m.fecha)}`)).join('');
+    $('#t-movs').innerHTML = movsT.length ? movsHTML(movsT.slice(0, 6)) : vacio('Todavía no hay entregas en esta tienda.');
+    $('#t-historial').innerHTML = movsT.length ? movsHTML(movsT) : vacio('Sin movimientos.');
+
+    const recs = db.recolecciones.filter(r => r.tiendaId === tid).sort((a, b) => b.fecha.localeCompare(a.fecha));
+    $('#t-recolecciones').innerHTML = recs.length ? recs.map(r => `<li class="flex items-center gap-3 py-3">
+        <span class="grid place-items-center w-10 h-10 rounded-full bg-sky-100 text-sky-700">${icon('truck')}</span>
+        <div class="flex-1"><p class="font-semibold text-sm">${fmtNum(r.litros)} L recolectados</p><p class="text-xs text-gray-500">${fmtFecha(r.fecha)}</p></div>
+        <span class="font-bold text-sm text-emerald-600">+$${r.pagoUSD.toFixed(2)}</span></li>`).join('') : vacio('Aún no hay recolecciones.');
+
+    renderClientes();
+    $('#dl-clientes').innerHTML = db.usuarios.map(u => `<option value="${u.codigo}">${esc(u.nombre)}</option>`).join('');
+  }
+
+  function renderClientes() {
+    const q = $<HTMLInputElement>('#buscar').value.trim().toLowerCase();
+    const lista = db.usuarios
+      .filter(u => !q || u.nombre.toLowerCase().includes(q) || u.codigo.toLowerCase().includes(q))
+      .sort((a, b) => Number(b.tiendaId === tid) - Number(a.tiendaId === tid) || a.nombre.localeCompare(b.nombre));
+    $('#clientes').innerHTML = lista.length ? lista.map(u => `<li class="flex items-center gap-3 py-3">
+        <span class="grid place-items-center w-10 h-10 rounded-full ${u.tiendaId === tid ? 'bg-magenta-100 text-magenta-600' : 'bg-plum-50 text-plum-500'} font-extrabold">${esc(u.nombre[0])}</span>
+        <div class="flex-1 min-w-0"><p class="font-semibold text-sm truncate">${esc(u.nombre)}</p>
+          <p class="text-xs text-gray-500">${u.codigo} · ${u.puntos} pts${u.tarjetaFisica ? ' · 🗂️ papel' : ''}</p></div>
+        <button type="button" class="btn btn-soft btn-sm" data-pdf="${u.id}" title="Descargar tarjeta de sellos">${icon('file', 'w-4 h-4')} PDF</button>
+      </li>`).join('') : vacio('No se encontraron clientes.');
+  }
+  $('#buscar').addEventListener('input', renderClientes);
+
+  function descargarTarjeta(u: Usuario) {
+    tarjetaPDF(u, tienda(db, u.tiendaId), db.reglas, Math.floor(litrosDe(db, u.id)));
+    toast('Generando tarjeta PDF de ' + u.nombre.split(' ')[0]);
+  }
+
+  function mostrarOk(html: string) {
+    $('#ok-body').innerHTML = html;
+    openSheet('sh-ok');
+  }
+
+  // ---------- Recibir aceite ----------
+  const rcCodigo = $<HTMLInputElement>('#rc-codigo');
+  const rcLitros = $<HTMLInputElement>('#rc-litros');
+  const calidad = () => ($('input[name="calidad"]:checked') as HTMLInputElement).value;
+
+  function resumenRecibir() {
+    const u = buscarCliente(rcCodigo.value);
+    $('#rc-cliente').innerHTML = rcCodigo.value && !u
+      ? '<p class="text-xs font-bold text-red-500 ml-1">Cliente no encontrado</p>'
+      : fichaCliente(u);
+    const l = parseFloat(rcLitros.value) || 0;
+    $('#rc-motivo').classList.toggle('hidden', calidad() === 'ok');
+    const res = $('#rc-resumen');
+    if (calidad() === 'no') {
+      res.innerHTML = 'No se sumarán puntos. Explícale cómo guardar bien el aceite.';
+    } else if (u) {
+      const disp = db.reglas.limiteLitrosDiaPorPersona - litrosHoy(db, u.id);
+      res.innerHTML = `Se sumarán <span class="text-magenta-600">+${Math.round(l * db.reglas.puntosPorLitro)} pts</span>` +
+        `<span class="block text-xs font-semibold text-gray-500 mt-0.5">Puede entregar ${Math.max(0, disp)} L más hoy (límite ${db.reglas.limiteLitrosDiaPorPersona} L)</span>`;
+    } else {
+      res.textContent = `${db.reglas.puntosPorLitro} pts por cada litro aceptado`;
+    }
+  }
+  $('#f-recibir').addEventListener('input', resumenRecibir);
+  $('#f-recibir').addEventListener('change', resumenRecibir);
+  $$('[data-step]').forEach(b => b.addEventListener('click', () => {
+    rcLitros.value = String(Math.max(0.5, (parseFloat(rcLitros.value) || 0) + parseFloat(b.dataset.step!)));
+    resumenRecibir();
+  }));
+
+  $('#q-recibir').addEventListener('click', () => {
+    (document.getElementById('f-recibir') as HTMLFormElement).reset();
+    resumenRecibir();
+    openSheet('sh-recibir');
+  });
+
+  $('#f-recibir').addEventListener('submit', e => {
+    e.preventDefault();
+    const u = buscarCliente(rcCodigo.value);
+    if (!u) return toast('Escribe un código o nombre de cliente válido', 'error');
+    const aceptado = calidad() === 'ok';
+    const litros = parseFloat(rcLitros.value);
+    const r = intentar(() => registrarEntrega(db, { usuarioId: u.id, tiendaId: tid, litros, aceptado, motivo: $<HTMLSelectElement>('#rc-motivo').value }));
+    if (!r) return;
+    closeSheet('sh-recibir');
+    render();
+    if (!aceptado) {
+      mostrarOk(`<div class="pop mx-auto grid place-items-center w-20 h-20 rounded-full bg-red-100 text-red-600">${icon('x', 'w-10 h-10')}</div>
+        <p class="mt-4 text-xl font-extrabold">Entrega rechazada</p>
+        <p class="mt-1 text-sm text-gray-500">Quedó registrada para ${esc(u.nombre)}. Recuérdale: aceite frío, colado, sin agua y en botella con tapa.</p>`);
+      return;
+    }
+    const sellos = u.tarjetaFisica && r.sellosHasta >= r.sellosDesde
+      ? `<div class="mt-5 rounded-3xl border-2 border-dashed border-gold-400 bg-gold-300/20 p-4">
+          <p class="flex items-center justify-center gap-2 font-extrabold text-plum-900">${icon('stamp', 'w-5 h-5')} Sella su tarjeta de papel</p>
+          <p class="mt-2 text-sm text-plum-700">Casilla${r.sellosHasta > r.sellosDesde ? 's' : ''} <b class="text-magenta-600 text-lg">${r.sellosDesde}${r.sellosHasta > r.sellosDesde ? ' a ' + r.sellosHasta : ''}</b> con sello o firma y fecha de hoy.</p>
+          ${r.sellosHasta > db.reglas.casillasTarjeta ? '<p class="mt-2 text-xs font-bold text-red-600">La tarjeta se llenó: entrégale una nueva desde Clientes → PDF.</p>' : ''}
+        </div>`
+      : u.tarjetaFisica ? '<p class="mt-4 text-xs text-gray-500">Aún no completa un litro entero para sellar casilla.</p>' : '';
+    mostrarOk(`<div class="pop mx-auto grid place-items-center w-20 h-20 rounded-full bg-emerald-100 text-emerald-600">${icon('check', 'w-10 h-10')}</div>
+      <p class="mt-4 text-4xl font-extrabold text-magenta-600">+${r.puntos} pts</p>
+      <p class="mt-1 text-sm text-gray-500">${fmtNum(litros)} L recibidos de <b class="text-plum-900">${esc(u.nombre)}</b></p>
+      ${sellos}`);
+  });
+
+  // ---------- Canjear ----------
+  const cjCodigo = $<HTMLInputElement>('#cj-codigo');
+  function renderCanje() {
+    const u = buscarCliente(cjCodigo.value);
+    $('#cj-cliente').innerHTML = cjCodigo.value && !u ? '<p class="text-xs font-bold text-red-500 ml-1">Cliente no encontrado</p>' : fichaCliente(u);
+    $('#cj-productos').innerHTML = db.catalogo.map(p => {
+      const ok = !!u && u.puntos >= p.costoPuntos;
+      return `<button type="button" data-producto="${p.id}" ${ok ? '' : 'disabled'} class="rounded-2xl border-2 border-plum-100 p-3 text-center transition hover:border-magenta-400 disabled:opacity-40 disabled:pointer-events-none">
+        <span class="text-3xl">${p.emoji}</span>
+        <span class="block text-xs font-bold mt-1 leading-tight">${esc(p.nombre)}</span>
+        <span class="block text-sm font-extrabold text-magenta-600 mt-1">${p.costoPuntos} pts</span></button>`;
+    }).join('');
+  }
+  cjCodigo.addEventListener('input', renderCanje);
+  $('#q-canjear').addEventListener('click', () => { cjCodigo.value = ''; renderCanje(); openSheet('sh-canjear'); });
+  $('#cj-productos').addEventListener('click', e => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>('[data-producto]');
+    const u = buscarCliente(cjCodigo.value);
+    if (!b || !u) return;
+    const p = intentar(() => canjear(db, u.id, tid, b.dataset.producto!));
+    if (!p) return;
+    closeSheet('sh-canjear');
+    render();
+    mostrarOk(`<div class="pop text-6xl">${p.emoji}</div>
+      <p class="mt-3 text-xl font-extrabold">Canje realizado</p>
+      <p class="mt-1 text-sm text-gray-500">Entrega <b class="text-plum-900">${esc(p.nombre)}</b> a ${esc(u.nombre)}.<br/>Le quedan <b class="text-magenta-600">${u.puntos} pts</b>.</p>`);
+  });
+
+  // ---------- Cliente nuevo ----------
+  $('#f-nuevo').addEventListener('submit', e => {
+    e.preventDefault();
+    const u = intentar(() => nuevoCliente(db, {
+      nombre: $<HTMLInputElement>('#nv-nombre').value,
+      telefono: $<HTMLInputElement>('#nv-tel').value,
+      tiendaId: tid,
+      tarjetaFisica: $<HTMLInputElement>('#nv-papel').checked,
+    }));
+    if (!u) return;
+    (e.target as HTMLFormElement).reset();
+    closeSheet('sh-nuevo');
+    render();
+    mostrarOk(`<div class="pop mx-auto grid place-items-center w-20 h-20 rounded-full bg-magenta-100 text-magenta-600">${icon('userplus', 'w-9 h-9')}</div>
+      <p class="mt-4 text-xl font-extrabold">¡Bienvenido/a, ${esc(u.nombre.split(' ')[0])}!</p>
+      <p class="mt-1 text-sm text-gray-500">Su código de cliente es</p>
+      <p class="mt-1 font-mono text-3xl font-extrabold tracking-widest text-magenta-600">${u.codigo}</p>
+      <button type="button" class="btn btn-primary w-full mt-5" data-pdf="${u.id}">${icon('file')} Descargar tarjeta de sellos (PDF)</button>`);
+  });
+
+  // ---------- Recolección ----------
+  $('#q-recoleccion').addEventListener('click', () => {
+    const t = tienda(db, tid)!;
+    if (t.recoleccionSolicitada) return toast('La recolección ya fue solicitada a la recicladora');
+    solicitarRecoleccion(db, tid);
+    render();
+    toast(`Recolección solicitada: ${fmtNum(t.litrosBidon)} L listos`);
+  });
+
+  // PDF desde cualquier botón
+  document.addEventListener('click', e => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>('[data-pdf]');
+    if (b) { const u = usuario(db, b.dataset.pdf!); if (u) descargarTarjeta(u); }
+  });
+
+  initTabs();
+  render();
+</script>

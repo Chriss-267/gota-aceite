@@ -1,0 +1,237 @@
+---
+import App from '../layouts/App.astro';
+import Icon from '../components/Icon.astro';
+import Sheet from '../components/Sheet.astro';
+
+const nav = [
+  { view: 'inicio', label: 'Inicio', icon: 'home' },
+  { view: 'canjes', label: 'Canjes', icon: 'gift' },
+  { view: 'sorteos', label: 'Sorteos', icon: 'ticket' },
+  { view: 'tiendas', label: 'Tiendas', icon: 'pin' },
+];
+---
+<App title="Ciudadano" nav={nav}>
+  <header class="hero">
+    <div class="relative z-10 flex items-center justify-between gap-2">
+      <a href="/" class="grid place-items-center w-9 h-9 rounded-full bg-white/10" aria-label="Cambiar rol"><Icon name="swap" class="w-4 h-4" /></a>
+      <div class="relative">
+        <select id="sel-usuario" class="hero-select" aria-label="Ver como"></select>
+        <Icon name="chevron" class="w-4 h-4 rotate-90 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+      </div>
+    </div>
+    <p class="relative z-10 mt-6 text-white/70 text-sm">Hola,</p>
+    <h1 id="saludo" class="relative z-10 text-2xl font-extrabold tracking-tight">—</h1>
+  </header>
+
+  <main class="sheet-body">
+    <!-- INICIO -->
+    <section data-view="inicio">
+      <div class="balance-card">
+        <div class="relative flex items-center justify-between">
+          <span class="text-sm font-semibold text-white/85">Puntos disponibles</span>
+          <button id="toggle-saldo" type="button" class="grid place-items-center w-8 h-8 rounded-full bg-white/15" aria-label="Mostrar u ocultar saldo"></button>
+        </div>
+        <p class="relative mt-1 flex items-baseline gap-2">
+          <span id="saldo" class="text-5xl font-extrabold tracking-tight tabular-nums">0</span>
+          <span class="text-lg font-bold text-white/80">pts</span>
+        </p>
+        <div class="relative mt-4 flex items-center justify-between text-xs">
+          <span id="codigo-chip" class="chip bg-white/15 text-white font-mono tracking-wider"></span>
+          <span id="tarjeta-chip" class="chip bg-gold-400 text-plum-900 hidden"><Icon name="stamp" class="w-3.5 h-3.5" /> Tarjeta de papel</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-4 gap-2 mt-5">
+        <button type="button" class="quick" data-open="sh-codigo"><span class="quick-ico"><Icon name="qr" class="w-6 h-6" /></span>Mi código</button>
+        <button type="button" class="quick" data-nav="canjes"><span class="quick-ico"><Icon name="gift" class="w-6 h-6" /></span>Canjear</button>
+        <button type="button" class="quick" data-nav="sorteos"><span class="quick-ico"><Icon name="ticket" class="w-6 h-6" /></span>Sorteos</button>
+        <button type="button" class="quick" data-nav="tiendas"><span class="quick-ico"><Icon name="pin" class="w-6 h-6" /></span>Dónde llevar</button>
+      </div>
+
+      <h2 class="section-title">Tu impacto</h2>
+      <div class="card">
+        <div class="grid grid-cols-2 gap-3">
+          <div class="rounded-2xl bg-amber-50 p-3">
+            <p class="text-[11px] font-bold text-amber-700 flex items-center gap-1"><Icon name="drop" class="w-3.5 h-3.5" /> Aceite reciclado</p>
+            <p class="mt-1 text-2xl font-extrabold text-plum-950"><span id="imp-litros">0</span> <span class="text-sm">L</span></p>
+          </div>
+          <div class="rounded-2xl bg-sky-50 p-3">
+            <p class="text-[11px] font-bold text-sky-700 flex items-center gap-1"><Icon name="leaf" class="w-3.5 h-3.5" /> Agua protegida</p>
+            <p class="mt-1 text-2xl font-extrabold text-plum-950"><span id="imp-agua">0</span> <span class="text-sm">L</span></p>
+          </div>
+        </div>
+        <div id="meta" class="mt-4"></div>
+      </div>
+
+      <a id="banner-quiz" href="/aprende" class="hidden mt-4 card !bg-emerald-500 !text-white flex items-center gap-3">
+        <span class="grid place-items-center w-11 h-11 rounded-2xl bg-white/20"><Icon name="book" class="w-6 h-6" /></span>
+        <span class="flex-1 text-sm"><b class="block">Aprende y gana puntos</b><span class="text-white/85 text-xs">Responde 4 preguntas sobre el aceite</span></span>
+        <Icon name="chevron" class="w-5 h-5" />
+      </a>
+
+      <h2 class="section-title">Movimientos</h2>
+      <ul id="movs" class="card !py-1 divide-y divide-plum-50"></ul>
+    </section>
+
+    <!-- CANJES -->
+    <section data-view="canjes" class="hidden">
+      <div class="card flex items-center gap-3">
+        <span class="grid place-items-center w-11 h-11 rounded-2xl bg-magenta-100 text-magenta-600"><Icon name="gift" class="w-6 h-6" /></span>
+        <p class="text-sm text-gray-600 flex-1">Canjea en tu tienda mostrando tu código. Tienes <b id="canje-saldo" class="text-magenta-600">0 pts</b>.</p>
+      </div>
+      <h2 class="section-title">Catálogo</h2>
+      <div id="catalogo" class="grid grid-cols-2 gap-3"></div>
+    </section>
+
+    <!-- SORTEOS -->
+    <section data-view="sorteos" class="hidden">
+      <h2 class="section-title !mt-0">Sorteos activos</h2>
+      <div id="sorteos" class="space-y-3"></div>
+    </section>
+
+    <!-- TIENDAS -->
+    <section data-view="tiendas" class="hidden">
+      <h2 class="section-title !mt-0">Puntos de acopio</h2>
+      <div id="tiendas" class="space-y-3"></div>
+      <div class="card mt-4 !bg-plum-900 text-white">
+        <p class="font-extrabold flex items-center gap-2"><Icon name="drop" class="w-5 h-5 text-gold-400" /> ¿Cómo lo llevo?</p>
+        <ol class="mt-2 text-sm text-white/80 space-y-1 list-decimal list-inside">
+          <li>Deja enfriar el aceite.</li>
+          <li>Cuélalo y guárdalo en una botella con tapa.</li>
+          <li>Sin agua ni restos de comida.</li>
+          <li>Llévalo y muestra tu código.</li>
+        </ol>
+      </div>
+    </section>
+  </main>
+
+  <Fragment slot="sheets">
+    <Sheet id="sh-codigo" title="Mi código">
+      <div class="text-center">
+        <div class="mx-auto w-fit rounded-3xl bg-plum-50 p-4"><canvas id="qr" class="w-56 h-56"></canvas></div>
+        <p id="qr-codigo" class="mt-4 font-mono text-3xl font-extrabold tracking-widest text-magenta-600"></p>
+        <p class="mt-1 text-sm text-gray-500">Muéstralo en la tienda al entregar tu aceite o al canjear.</p>
+        <button id="btn-pdf" type="button" class="btn btn-dark w-full mt-5"><Icon name="file" /> Descargar mi tarjeta de sellos (PDF)</button>
+      </div>
+    </Sheet>
+  </Fragment>
+</App>
+
+<script>
+  import QRCode from 'qrcode';
+  import { load, pref, usuario, tienda, movsDe, litrosDe, comprarBoleto, fmtNum } from '../lib/store';
+  import { $, esc, initTabs, movRow, vacio, toast, intentar } from '../lib/ui';
+  import { icon } from '../lib/icons';
+  import { tarjetaPDF } from '../lib/pdf';
+
+  let db = load();
+  let uid = pref.get('usuario', db.usuarios[0].id);
+  if (!usuario(db, uid)) uid = db.usuarios[0].id;
+  let oculto = pref.get('ocultar') === '1';
+
+  const sel = $<HTMLSelectElement>('#sel-usuario');
+  sel.innerHTML = db.usuarios.map(u => `<option value="${u.id}">${esc(u.nombre)}</option>`).join('');
+  sel.value = uid;
+  sel.addEventListener('change', () => { uid = sel.value; pref.set('usuario', uid); render(); });
+
+  $('#toggle-saldo').addEventListener('click', () => { oculto = !oculto; pref.set('ocultar', oculto ? '1' : '0'); render(); });
+
+  function render() {
+    db = load();
+    const u = usuario(db, uid)!;
+    const litros = litrosDe(db, uid);
+
+    $('#saludo').textContent = u.nombre.split(' ')[0] + ' 👋';
+    $('#saldo').textContent = oculto ? '•••' : String(u.puntos);
+    $('#toggle-saldo').innerHTML = icon(oculto ? 'eyeoff' : 'eye', 'w-4 h-4');
+    $('#codigo-chip').textContent = u.codigo;
+    $('#tarjeta-chip').classList.toggle('hidden', !u.tarjetaFisica);
+    $('#imp-litros').textContent = fmtNum(litros);
+    $('#imp-agua').textContent = fmtNum(litros * db.reglas.litrosAguaPorLitroAceite);
+    $('#banner-quiz').classList.toggle('hidden', u.quizHecho);
+
+    // Próximo premio alcanzable
+    const sig = [...db.catalogo].sort((a, b) => a.costoPuntos - b.costoPuntos).find(p => p.costoPuntos > u.puntos);
+    $('#meta').innerHTML = sig
+      ? `<div class="flex justify-between text-xs font-bold text-plum-700 mb-1.5"><span>Próximo: ${sig.emoji} ${esc(sig.nombre)}</span><span>${u.puntos}/${sig.costoPuntos}</span></div>
+         <div class="h-2.5 rounded-full bg-plum-100 overflow-hidden"><span class="block h-full rounded-full bg-magenta-500" style="width:${Math.min(100, u.puntos / sig.costoPuntos * 100)}%"></span></div>
+         <p class="mt-1.5 text-[11px] text-gray-500">Te faltan ${Math.ceil((sig.costoPuntos - u.puntos) / db.reglas.puntosPorLitro)} L de aceite.</p>`
+      : `<p class="text-sm font-bold text-emerald-600">🎉 ¡Puedes canjear cualquier producto del catálogo!</p>`;
+
+    const movs = movsDe(db, uid);
+    $('#movs').innerHTML = movs.length
+      ? movs.slice(0, 12).map(m => movRow(m, [tienda(db, m.tiendaId)?.nombre, new Date(m.fecha).toLocaleDateString('es-SV', { day: 'numeric', month: 'short' })].filter(Boolean).join(' · '))).join('')
+      : vacio('Aún no tienes movimientos. ¡Lleva tu primer litro!');
+
+    // Canjes
+    $('#canje-saldo').textContent = u.puntos + ' pts';
+    $('#catalogo').innerHTML = db.catalogo.map(p => {
+      const ok = u.puntos >= p.costoPuntos;
+      return `<div class="card text-center ${ok ? '' : 'opacity-70'}">
+        <div class="text-4xl">${p.emoji}</div>
+        <p class="mt-2 text-sm font-bold text-plum-950 leading-tight min-h-[2.5em]">${esc(p.nombre)}</p>
+        <p class="mt-1 text-magenta-600 font-extrabold">${p.costoPuntos} pts</p>
+        <p class="mt-2 chip ${ok ? 'bg-emerald-100 text-emerald-700' : 'bg-plum-50 text-plum-500'}">${ok ? '✓ Disponible' : `Faltan ${p.costoPuntos - u.puntos}`}</p>
+      </div>`;
+    }).join('');
+
+    // Sorteos
+    $('#sorteos').innerHTML = db.sorteos.map(s => {
+      const mios = s.boletos.filter(b => b === uid).length;
+      const ganador = s.ganadorId ? usuario(db, s.ganadorId) : null;
+      return `<div class="card">
+        <div class="flex items-center gap-3">
+          <span class="grid place-items-center w-14 h-14 rounded-2xl bg-gold-300/40 text-3xl">${s.emoji}</span>
+          <div class="flex-1">
+            <p class="font-extrabold text-plum-950">${esc(s.premio)}</p>
+            <p class="text-xs text-gray-500">Sorteo: ${new Date(s.fecha + 'T12:00').toLocaleDateString('es-SV', { day: 'numeric', month: 'long' })} · ${s.boletos.length} boletos</p>
+          </div>
+        </div>
+        ${ganador
+          ? `<p class="mt-3 rounded-2xl bg-emerald-50 text-emerald-700 text-sm font-bold p-3">🏆 Ganador: ${esc(ganador.nombre)}${ganador.id === uid ? ' — ¡eres tú!' : ''}</p>`
+          : `<div class="mt-3 flex items-center justify-between gap-2">
+              <span class="text-xs font-bold text-plum-700">Tus boletos: <span class="text-magenta-600">${mios}</span></span>
+              <button type="button" class="btn btn-primary btn-sm" data-boleto="${s.id}" ${u.puntos < s.costoBoleto ? 'disabled' : ''}>${icon('ticket', 'w-4 h-4')} Comprar boleto · ${s.costoBoleto} pts</button>
+            </div>`}
+      </div>`;
+    }).join('');
+
+    // Tiendas
+    $('#tiendas').innerHTML = db.tiendas.map(t => {
+      const pct = Math.round(t.litrosBidon / db.reglas.capacidadBidonTienda * 100);
+      const lleno = pct >= 100;
+      return `<div class="card ${t.id === u.tiendaId ? 'ring-2 ring-magenta-400' : ''}">
+        <div class="flex items-start gap-3">
+          <span class="grid place-items-center w-11 h-11 rounded-2xl bg-plum-100 text-plum-700 shrink-0">${icon('store')}</span>
+          <div class="flex-1 min-w-0">
+            <p class="font-extrabold text-plum-950">${esc(t.nombre)} ${t.id === u.tiendaId ? '<span class="chip bg-magenta-100 text-magenta-600 ml-1">Tu tienda</span>' : ''}</p>
+            <p class="text-xs text-gray-500">${esc(t.direccion)} · ${esc(t.zona)}</p>
+            <p class="text-xs text-gray-500">🕒 ${esc(t.horario)}</p>
+          </div>
+        </div>
+        <div class="mt-3 flex items-center gap-2 text-[11px] font-bold ${lleno ? 'text-red-600' : 'text-plum-700'}">
+          <div class="flex-1 h-2 rounded-full bg-plum-100 overflow-hidden"><span class="block h-full ${lleno ? 'bg-red-500' : 'bg-gold-400'}" style="width:${Math.min(100, pct)}%"></span></div>
+          ${lleno ? 'Bidón lleno' : 'Recibiendo aceite'}
+        </div>
+      </div>`;
+    }).join('');
+
+    // Hoja "Mi código"
+    $('#qr-codigo').textContent = u.codigo;
+    QRCode.toCanvas($<HTMLCanvasElement>('#qr'), u.codigo, { width: 224, margin: 1, color: { dark: '#2a0b3d', light: '#f7f2fa' } });
+  }
+
+  document.addEventListener('click', e => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>('[data-boleto]');
+    if (!b) return;
+    intentar(() => { comprarBoleto(db, uid, b.dataset.boleto!); toast('¡Boleto comprado! Mucha suerte 🍀'); render(); });
+  });
+
+  $('#btn-pdf').addEventListener('click', () => {
+    const u = usuario(db, uid)!;
+    tarjetaPDF(u, tienda(db, u.tiendaId), db.reglas, Math.floor(litrosDe(db, uid)));
+  });
+
+  initTabs();
+  render();
+</script>

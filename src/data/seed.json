@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "reglas": {
+    "puntosPorLitro": 10,
+    "limiteLitrosDiaPorPersona": 3,
+    "litrosAguaPorLitroAceite": 40000,
+    "capacidadBidonTienda": 50,
+    "alertaBidonPorcentaje": 80,
+    "puntosQuiz": 5,
+    "casillasTarjeta": 20,
+    "pagoTiendaPorLitroUSD": 0.25,
+    "porcentajeProyecto": 20
+  },
+  "usuarios": [
+    { "id": "U001", "nombre": "María López", "codigo": "GQS-4821", "telefono": "7012-3344", "puntos": 85, "tiendaId": "T01", "tarjetaFisica": false, "quizHecho": false },
+    { "id": "U002", "nombre": "José Hernández", "codigo": "GQS-1937", "telefono": "7788-1020", "puntos": 40, "tiendaId": "T01", "tarjetaFisica": true, "quizHecho": false },
+    { "id": "U003", "nombre": "Ana Martínez", "codigo": "GQS-5560", "telefono": "6120-4455", "puntos": 120, "tiendaId": "T02", "tarjetaFisica": false, "quizHecho": true },
+    { "id": "U004", "nombre": "Doña Rosa Ayala", "codigo": "GQS-3012", "telefono": "", "puntos": 25, "tiendaId": "T03", "tarjetaFisica": true, "quizHecho": false },
+    { "id": "U005", "nombre": "Carlos Rivas", "codigo": "GQS-7744", "telefono": "7555-9080", "puntos": 10, "tiendaId": "T02", "tarjetaFisica": false, "quizHecho": false }
+  ],
+  "tiendas": [
+    { "id": "T01", "nombre": "Tienda Don Chepe", "zona": "San Salvador Centro", "direccion": "Calle Arce #214", "horario": "7:00 a. m. – 8:00 p. m.", "litrosBidon": 32, "recoleccionSolicitada": false },
+    { "id": "T02", "nombre": "Mini Súper La Bendición", "zona": "Soyapango", "direccion": "Col. Los Ángeles, pje. 3", "horario": "6:30 a. m. – 9:00 p. m.", "litrosBidon": 44, "recoleccionSolicitada": true },
+    { "id": "T03", "nombre": "Abarrotería Doña Tere", "zona": "Santa Tecla", "direccion": "4.ª Av. Norte #18", "horario": "7:00 a. m. – 7:00 p. m.", "litrosBidon": 12, "recoleccionSolicitada": false },
+    { "id": "T04", "nombre": "Tienda UPED Campus", "zona": "San Salvador – UPED", "direccion": "25 Av. Norte, frente a la universidad", "horario": "8:00 a. m. – 5:00 p. m.", "litrosBidon": 6, "recoleccionSolicitada": false }
+  ],
+  "movimientos": [
+    { "id": "M001", "tipo": "entrega", "usuarioId": "U001", "tiendaId": "T01", "litros": 2, "puntos": 20, "detalle": "Aceite aceptado", "fecha": "2026-10-02T10:15:00" },
+    { "id": "M002", "tipo": "entrega", "usuarioId": "U001", "tiendaId": "T01", "litros": 1.5, "puntos": 15, "detalle": "Aceite aceptado", "fecha": "2026-10-06T17:40:00" },
+    { "id": "M003", "tipo": "entrega", "usuarioId": "U001", "tiendaId": "T01", "litros": 3, "puntos": 30, "detalle": "Aceite aceptado", "fecha": "2026-10-10T09:05:00" },
+    { "id": "M004", "tipo": "entrega", "usuarioId": "U001", "tiendaId": "T01", "litros": 2, "puntos": 20, "detalle": "Aceite aceptado", "fecha": "2026-10-13T18:20:00" },
+    { "id": "M005", "tipo": "entrega", "usuarioId": "U002", "tiendaId": "T01", "litros": 2, "puntos": 20, "detalle": "Aceite aceptado · tarjeta física", "fecha": "2026-10-04T08:30:00" },
+    { "id": "M006", "tipo": "entrega", "usuarioId": "U002", "tiendaId": "T01", "litros": 2, "puntos": 20, "detalle": "Aceite aceptado · tarjeta física", "fecha": "2026-10-11T08:45:00" },
+    { "id": "M007", "tipo": "rechazo", "usuarioId": "U002", "tiendaId": "T01", "litros": 1, "puntos": 0, "detalle": "Rechazado: mezclado con agua", "fecha": "2026-10-14T08:50:00" },
+    { "id": "M008", "tipo": "entrega", "usuarioId": "U003", "tiendaId": "T02", "litros": 3, "puntos": 30, "detalle": "Aceite aceptado", "fecha": "2026-10-01T12:00:00" },
+    { "id": "M009", "tipo": "entrega", "usuarioId": "U003", "tiendaId": "T02", "litros": 3, "puntos": 30, "detalle": "Aceite aceptado", "fecha": "2026-10-05T12:30:00" },
+    { "id": "M010", "tipo": "entrega", "usuarioId": "U003", "tiendaId": "T02", "litros": 3, "puntos": 30, "detalle": "Aceite aceptado", "fecha": "2026-10-09T11:10:00" },
+    { "id": "M011", "tipo": "entrega", "usuarioId": "U003", "tiendaId": "T02", "litros": 3, "puntos": 30, "detalle": "Aceite aceptado", "fecha": "2026-10-12T16:00:00" },
+    { "id": "M012", "tipo": "quiz", "usuarioId": "U003", "tiendaId": null, "litros": 0, "puntos": 5, "detalle": "Quiz «Aprende» completado", "fecha": "2026-10-12T20:00:00" },
+    { "id": "M013", "tipo": "canje", "usuarioId": "U003", "tiendaId": "T02", "litros": 0, "puntos": -5, "detalle": "Canje: Bolsa de sal", "fecha": "2026-10-13T09:00:00" },
+    { "id": "M014", "tipo": "entrega", "usuarioId": "U004", "tiendaId": "T03", "litros": 2.5, "puntos": 25, "detalle": "Aceite aceptado · tarjeta física", "fecha": "2026-10-08T15:00:00" },
+    { "id": "M015", "tipo": "entrega", "usuarioId": "U005", "tiendaId": "T02", "litros": 1, "puntos": 10, "detalle": "Aceite aceptado", "fecha": "2026-10-15T19:10:00" }
+  ],
+  "catalogo": [
+    { "id": "P01", "nombre": "Bolsa de sal", "costoPuntos": 5, "emoji": "🧂" },
+    { "id": "P02", "nombre": "Libra de frijol", "costoPuntos": 25, "emoji": "🫘" },
+    { "id": "P03", "nombre": "Libra de arroz", "costoPuntos": 30, "emoji": "🍚" },
+    { "id": "P04", "nombre": "Jabón de aceite reciclado", "costoPuntos": 20, "emoji": "🧼" },
+    { "id": "P05", "nombre": "Recarga de saldo $1", "costoPuntos": 50, "emoji": "📱" },
+    { "id": "P06", "nombre": "Botella de aceite nuevo", "costoPuntos": 80, "emoji": "🫙" }
+  ],
+  "sorteos": [
+    { "id": "S01", "premio": "Canasta básica familiar", "emoji": "🧺", "fecha": "2026-11-01", "costoBoleto": 20, "boletos": ["U003", "U003", "U001"], "ganadorId": null },
+    { "id": "S02", "premio": "Bicicleta", "emoji": "🚲", "fecha": "2026-12-15", "costoBoleto": 50, "boletos": ["U003"], "ganadorId": null }
+  ],
+  "recolecciones": [
+    { "id": "R001", "tiendaId": "T01", "litros": 50, "pagoUSD": 12.5, "fecha": "2026-09-28T10:00:00" },
+    { "id": "R002", "tiendaId": "T02", "litros": 50, "pagoUSD": 12.5, "fecha": "2026-09-30T11:00:00" }
+  ]
+}

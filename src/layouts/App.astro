@@ -1,0 +1,38 @@
+---
+import '../styles/global.css';
+import Icon from '../components/Icon.astro';
+
+interface NavItem { view: string; label: string; icon: string }
+interface Props { title: string; nav?: NavItem[] }
+const { title, nav = [] } = Astro.props;
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#2a0b3d" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <title>{title} · Gota que Suma</title>
+  </head>
+  <body class="font-sans antialiased text-plum-950">
+    <div class="app-shell">
+      <slot />
+      {nav.length > 0 && (
+        <nav class="bottom-nav" aria-label="Navegación">
+          {nav.map(n => (
+            <button type="button" class="nav-btn" data-nav={n.view}>
+              <Icon name={n.icon} class="w-6 h-6" />
+              {n.label}
+              <span class="nav-dot"></span>
+            </button>
+          ))}
+        </nav>
+      )}
+    </div>
+    <slot name="sheets" />
+  </body>
+</html>

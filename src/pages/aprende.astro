@@ -1,0 +1,93 @@
+---
+import App from '../layouts/App.astro';
+import Icon from '../components/Icon.astro';
+
+const datos = [
+  { emoji: '🚰', titulo: 'Tapa el drenaje', texto: 'El aceite se enfría, se pega a las tuberías y forma tapones. En temporada de lluvia causa encharcamientos e inundaciones.' },
+  { emoji: '💧', titulo: 'Contamina el agua', texto: 'Un litro de aceite usado puede contaminar hasta 40,000 litros de agua: forma una capa que impide el paso del oxígeno.' },
+  { emoji: '🚌', titulo: 'Se convierte en energía', texto: 'Reciclado, se transforma en biodiésel para el transporte y en subproductos como jabón.' },
+];
+const pasos = ['Deja enfriar el aceite', 'Cuélalo para quitar restos de comida', 'Guárdalo en botella plástica con tapa', 'Sin agua ni otros líquidos', 'Llévalo a tu tienda y suma puntos'];
+---
+<App title="Aprende">
+  <header class="hero !pb-20">
+    <div class="relative z-10 flex items-center gap-3">
+      <a href="/ciudadano" class="grid place-items-center w-9 h-9 rounded-full bg-white/10" aria-label="Volver"><Icon name="back" class="w-5 h-5" /></a>
+      <span class="font-bold">Aprende y gana</span>
+    </div>
+    <h1 class="relative z-10 mt-6 text-2xl font-extrabold tracking-tight">¿Por qué no tirar el aceite<br />al drenaje?</h1>
+  </header>
+
+  <main class="sheet-body !pb-10">
+    <div class="space-y-3">
+      {datos.map(d => (
+        <div class="card flex gap-3">
+          <span class="text-3xl">{d.emoji}</span>
+          <div><p class="font-extrabold">{d.titulo}</p><p class="text-sm text-gray-600 mt-0.5">{d.texto}</p></div>
+        </div>
+      ))}
+    </div>
+
+    <h2 class="section-title">Cómo guardarlo</h2>
+    <ol class="card space-y-2">
+      {pasos.map((p, i) => (
+        <li class="flex items-center gap-3 text-sm font-semibold">
+          <span class="grid place-items-center w-7 h-7 rounded-full bg-magenta-500 text-white text-xs font-extrabold shrink-0">{i + 1}</span>{p}
+        </li>
+      ))}
+    </ol>
+
+    <h2 class="section-title">Quiz <span id="quiz-premio" class="chip bg-emerald-100 text-emerald-700"></span></h2>
+    <div id="quiz" class="card"></div>
+  </main>
+</App>
+
+<script>
+  import { load, pref, usuario, completarQuiz } from '../lib/store';
+  import { $, esc } from '../lib/ui';
+
+  const preguntas = [
+    { q: '¿Cuántos litros de agua puede contaminar 1 litro de aceite usado?', o: ['100 litros', '4,000 litros', '40,000 litros'], ok: 2 },
+    { q: '¿Cómo debes guardar el aceite usado?', o: ['Caliente, en bolsa plástica', 'Frío y colado, en botella con tapa', 'Mezclado con agua'], ok: 1 },
+    { q: '¿En qué se puede convertir el aceite reciclado?', o: ['Biodiésel y jabón', 'Agua potable', 'Nada, es basura'], ok: 0 },
+    { q: '¿Qué pasa si lo tiras al drenaje?', o: ['Se disuelve sin problema', 'Tapa tuberías y causa inundaciones', 'Limpia las tuberías'], ok: 1 },
+  ];
+
+  const db = load();
+  const uid = pref.get('usuario', db.usuarios[0].id);
+  const u = usuario(db, uid) ?? db.usuarios[0];
+  $('#quiz-premio').textContent = u.quizHecho ? 'Ya ganaste tus puntos' : `+${db.reglas.puntosQuiz} pts para ${u.nombre.split(' ')[0]}`;
+
+  let i = 0, aciertos = 0;
+  function pintar() {
+    const box = $('#quiz');
+    if (i >= preguntas.length) {
+      const gano = aciertos >= 3 ? completarQuiz(db, u.id) : 0;
+      box.innerHTML = `<div class="text-center py-2">
+        <div class="pop text-6xl">${aciertos >= 3 ? '🎉' : '📚'}</div>
+        <p class="mt-3 text-xl font-extrabold">${aciertos} de ${preguntas.length} correctas</p>
+        <p class="mt-1 text-sm text-gray-500">${gano ? `¡Ganaste <b class="text-magenta-600">+${gano} pts</b>, ${esc(u.nombre.split(' ')[0])}!` : aciertos >= 3 ? 'Muy bien. Los puntos del quiz ya se habían sumado antes.' : 'Necesitas 3 correctas para ganar puntos. ¡Inténtalo otra vez!'}</p>
+        <div class="mt-4 flex gap-2"><button id="otra" class="btn btn-soft flex-1">Repetir</button><a href="/ciudadano" class="btn btn-primary flex-1">Ver mis puntos</a></div>
+      </div>`;
+      $('#otra').addEventListener('click', () => { i = 0; aciertos = 0; pintar(); });
+      return;
+    }
+    const p = preguntas[i];
+    box.innerHTML = `<p class="text-xs font-bold text-plum-500">Pregunta ${i + 1} de ${preguntas.length}</p>
+      <div class="mt-1 h-1.5 rounded-full bg-plum-50"><span class="block h-full rounded-full bg-magenta-500" style="width:${i / preguntas.length * 100}%"></span></div>
+      <p class="mt-3 font-extrabold">${esc(p.q)}</p>
+      <div class="mt-3 space-y-2">${p.o.map((o, k) => `<button data-op="${k}" class="w-full text-left rounded-2xl border-2 border-plum-100 px-4 py-3 text-sm font-semibold transition hover:border-magenta-400">${esc(o)}</button>`).join('')}</div>`;
+    box.querySelectorAll<HTMLButtonElement>('[data-op]').forEach(b => b.addEventListener('click', () => {
+      const k = Number(b.dataset.op);
+      box.querySelectorAll<HTMLButtonElement>('[data-op]').forEach(x => {
+        x.disabled = true;
+        const n = Number(x.dataset.op);
+        if (n === p.ok) x.classList.add('!border-emerald-500', 'bg-emerald-50', 'text-emerald-700');
+        else if (n === k) x.classList.add('!border-red-400', 'bg-red-50', 'text-red-600');
+      });
+      if (k === p.ok) aciertos++;
+      setTimeout(() => { i++; pintar(); }, 900);
+    }));
+  }
+  pintar();
+</script>

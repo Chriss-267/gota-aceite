@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+
+  --color-plum-50: #f7f2fa;
+  --color-plum-100: #eee4f4;
+  --color-plum-200: #dcc8e8;
+  --color-plum-300: #b98fd0;
+  --color-plum-500: #7a3fa0;
+  --color-plum-700: #4b1a6b;
+  --color-plum-800: #3a1054;
+  --color-plum-900: #2a0b3d;
+  --color-plum-950: #1a0526;
+
+  --color-magenta-50: #fff0f8;
+  --color-magenta-100: #fde0f0;
+  --color-magenta-200: #fbc0e1;
+  --color-magenta-400: #f05aaa;
+  --color-magenta-500: #e2208c;
+  --color-magenta-600: #c4127a;
+  --color-magenta-700: #9c0c61;
+
+  --color-gold-300: #ffd84d;
+  --color-gold-400: #ffc400;
+  --color-gold-500: #e6ad00;
+}
+
+html { -webkit-tap-highlight-color: transparent; }
+body {
+  background: radial-gradient(1200px 600px at 50% -10%, #3a1054 0%, #1a0526 60%) fixed;
+  min-height: 100dvh;
+}
+
+@layer components {
+  /* Contenedor tipo app móvil */
+  .app-shell { @apply relative mx-auto w-full max-w-[440px] min-h-dvh bg-plum-50 sm:my-6 sm:min-h-[calc(100dvh-3rem)] sm:rounded-[2.2rem] sm:shadow-2xl sm:shadow-black/50 overflow-hidden; }
+  .hero { @apply bg-plum-900 text-white px-5 pt-5 pb-24 relative overflow-hidden; }
+  .hero::after {
+    content: ""; position: absolute; inset: auto -30% -60% auto; width: 320px; height: 320px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(226,32,140,.45), transparent 65%); pointer-events: none;
+  }
+  .sheet-body { @apply -mt-16 relative z-10 px-4 pb-28; }
+
+  .balance-card {
+    @apply relative rounded-3xl p-5 text-white shadow-xl shadow-magenta-700/30 overflow-hidden;
+    background: linear-gradient(135deg, #e2208c 0%, #9c0c61 55%, #4b1a6b 100%);
+  }
+  .balance-card::before {
+    content: ""; position: absolute; right: -40px; top: -40px; width: 160px; height: 160px; border-radius: 50%;
+    background: rgba(255,255,255,.12);
+  }
+  .card { @apply bg-white rounded-3xl p-4 shadow-sm shadow-plum-900/5; }
+  .section-title { @apply text-sm font-extrabold text-plum-950 px-1 mb-2 mt-6 flex items-center justify-between; }
+
+  /* Acciones rápidas redondas */
+  .quick { @apply flex flex-col items-center gap-1.5 text-[11px] font-bold text-plum-900 text-center leading-tight; }
+  .quick-ico { @apply grid place-items-center w-14 h-14 rounded-2xl bg-white text-magenta-600 shadow-md shadow-plum-900/10 transition active:scale-95; }
+
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3.5 font-bold text-sm transition active:scale-[.98] disabled:opacity-40 disabled:pointer-events-none; }
+  /* Usar siempre junto a .btn: class="btn btn-primary" */
+  .btn-primary { @apply bg-magenta-500 text-white hover:bg-magenta-600 shadow-lg shadow-magenta-500/30; }
+  .btn-dark { @apply bg-plum-900 text-white hover:bg-plum-800; }
+  .btn-soft { @apply bg-plum-100 text-plum-900 hover:bg-plum-200; }
+  .btn-sm { @apply px-3 py-2 rounded-xl text-xs; }
+
+  .field { @apply w-full rounded-2xl border-2 border-plum-100 bg-plum-50 px-4 py-3 text-plum-950 font-semibold outline-none focus:border-magenta-400 focus:bg-white transition; }
+  .label { @apply block text-xs font-bold text-plum-700 mb-1.5 ml-1; }
+  .chip { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold; }
+
+  /* Selector compacto en el encabezado */
+  .hero-select { @apply appearance-none bg-white/10 hover:bg-white/15 text-white text-sm font-bold rounded-full pl-3 pr-8 py-1.5 outline-none cursor-pointer max-w-[60vw] truncate; }
+  .hero-select option { @apply text-plum-950; }
+
+  /* Barra inferior */
+  .bottom-nav { @apply fixed sm:absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[440px] z-40 bg-white/95 backdrop-blur border-t border-plum-100 px-2 pt-2 pb-[max(.6rem,env(safe-area-inset-bottom))] flex justify-around; }
+  .nav-btn { @apply flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[11px] font-bold text-gray-400 transition; }
+  .nav-btn.is-active { @apply text-magenta-600; }
+  .nav-btn.is-active .nav-dot { @apply opacity-100; }
+  .nav-dot { @apply w-1 h-1 rounded-full bg-magenta-500 opacity-0 mt-0.5; }
+
+  .progress { @apply h-2.5 rounded-full bg-white/25 overflow-hidden; }
+  .progress > span { @apply block h-full rounded-full bg-gold-400 transition-all duration-500; }
+}
+
+/* Hojas inferiores con <dialog> */
+dialog.sheet {
+  margin: auto auto 0; width: 100%; max-width: 440px; max-height: 92dvh; border: 0; padding: 0;
+  border-radius: 2rem 2rem 0 0; background: white; color: inherit; overflow: auto;
+}
+dialog.sheet::backdrop { background: rgba(26, 5, 38, .55); backdrop-filter: blur(2px); }
+dialog.sheet[open] { animation: sheet-up .28s cubic-bezier(.2,.9,.3,1); }
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@media (min-width: 640px) { dialog.sheet { margin-bottom: 1.5rem; border-radius: 2rem; } }
+
+.toast { transition: opacity .3s, transform .3s; animation: toast-in .25s ease-out; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(10px); } }
+
+.pop { animation: pop .5s cubic-bezier(.2,1.4,.4,1); }
+@keyframes pop { from { transform: scale(.6); opacity: 0; } }

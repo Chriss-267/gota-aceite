@@ -1,0 +1,64 @@
+---
+import App from '../layouts/App.astro';
+import Icon from '../components/Icon.astro';
+
+const roles = [
+  { href: '/ciudadano', icon: 'drop', titulo: 'Soy ciudadano', texto: 'Junta puntos llevando tu aceite usado a la tienda.', color: 'bg-magenta-500' },
+  { href: '/tienda', icon: 'store', titulo: 'Soy tienda', texto: 'Recibe aceite, sella tarjetas y canjea puntos.', color: 'bg-gold-400 !text-plum-900' },
+  { href: '/recicladora', icon: 'truck', titulo: 'Soy recicladora', texto: 'Recolecta, mide el impacto y administra la red.', color: 'bg-plum-500' },
+];
+---
+<App title="Inicio">
+  <header class="hero !pb-10">
+    <div class="flex items-center gap-2 relative z-10">
+      <span class="grid place-items-center w-10 h-10 rounded-2xl bg-magenta-500"><Icon name="drop" class="w-6 h-6" /></span>
+      <span class="font-extrabold text-lg tracking-tight">Gota que Suma</span>
+    </div>
+    <h1 class="relative z-10 mt-10 text-[2rem] leading-[1.1] font-extrabold tracking-tight">
+      Tu aceite usado<br /><span class="text-gold-400">vale puntos.</span>
+    </h1>
+    <p class="relative z-10 mt-3 text-white/75 text-sm max-w-[30ch]">
+      Llévalo a la tienda de tu barrio, gana puntos y evita que contamine el agua.
+    </p>
+    <div class="relative z-10 mt-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold">
+      <Icon name="leaf" class="w-4 h-4 text-gold-400" /> 1 litro de aceite contamina 40,000 litros de agua
+    </div>
+  </header>
+
+  <main class="px-4 py-6 space-y-3">
+    <p class="text-xs font-extrabold uppercase tracking-wider text-plum-500 px-1">¿Cómo quieres entrar?</p>
+    {roles.map(r => (
+      <a href={r.href} class="card flex items-center gap-4 hover:shadow-md transition active:scale-[.99]">
+        <span class={`grid place-items-center w-14 h-14 rounded-2xl text-white shrink-0 ${r.color}`}><Icon name={r.icon} class="w-7 h-7" /></span>
+        <span class="flex-1">
+          <span class="block font-extrabold text-plum-950">{r.titulo}</span>
+          <span class="block text-xs text-gray-500 mt-0.5">{r.texto}</span>
+        </span>
+        <Icon name="chevron" class="w-5 h-5 text-plum-300" />
+      </a>
+    ))}
+    <a href="/aprende" class="card flex items-center gap-4 !bg-emerald-50 hover:shadow-md transition">
+      <span class="grid place-items-center w-14 h-14 rounded-2xl bg-emerald-500 text-white shrink-0"><Icon name="book" class="w-7 h-7" /></span>
+      <span class="flex-1">
+        <span class="block font-extrabold text-plum-950">Aprende y gana</span>
+        <span class="block text-xs text-gray-500 mt-0.5">¿Por qué no tirarlo al drenaje? Responde el quiz y suma puntos.</span>
+      </span>
+      <Icon name="chevron" class="w-5 h-5 text-emerald-400" />
+    </a>
+
+    <div class="pt-6 text-center">
+      <button id="reset" type="button" class="btn btn-soft btn-sm"><Icon name="refresh" class="w-4 h-4" /> Reiniciar datos de la demo</button>
+      <p class="mt-4 text-[11px] text-plum-300">App demostrativa · Rally Latinoamericano de Innovación 2026 · UPED</p>
+    </div>
+  </main>
+</App>
+
+<script>
+  import { reset } from '../lib/store';
+  import { toast } from '../lib/ui';
+  document.getElementById('reset')!.addEventListener('click', () => {
+    if (!confirm('¿Reiniciar todos los datos de la demo a los valores de ejemplo?')) return;
+    reset();
+    toast('Datos de la demo reiniciados');
+  });
+</script>

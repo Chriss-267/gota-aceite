@@ -1,0 +1,235 @@
+---
+import App from '../layouts/App.astro';
+import Icon from '../components/Icon.astro';
+import Sheet from '../components/Sheet.astro';
+
+const nav = [
+  { view: 'panel', label: 'Panel', icon: 'chart' },
+  { view: 'tiendas', label: 'Tiendas', icon: 'store' },
+  { view: 'sorteos', label: 'Sorteos', icon: 'trophy' },
+  { view: 'ajustes', label: 'Ajustes', icon: 'sliders' },
+];
+
+const reglas = [
+  { k: 'puntosPorLitro', label: 'Puntos por litro', suf: 'pts' },
+  { k: 'limiteLitrosDiaPorPersona', label: 'Límite por persona al día', suf: 'L' },
+  { k: 'capacidadBidonTienda', label: 'Capacidad del bidón por tienda', suf: 'L' },
+  { k: 'alertaBidonPorcentaje', label: 'Pedir recolección automática al', suf: '%' },
+  { k: 'casillasTarjeta', label: 'Casillas en la tarjeta de papel', suf: '' },
+  { k: 'puntosQuiz', label: 'Puntos por completar el quiz', suf: 'pts' },
+  { k: 'pagoTiendaPorLitroUSD', label: 'Pago a la tienda por litro (ejemplo)', suf: 'USD', step: '0.01' },
+  { k: 'porcentajeProyecto', label: 'Aceite destinado al proyecto (jabón)', suf: '%' },
+  { k: 'litrosAguaPorLitroAceite', label: 'Litros de agua que contamina 1 L', suf: 'L' },
+];
+---
+<App title="Recicladora" nav={nav}>
+  <header class="hero">
+    <div class="relative z-10 flex items-center justify-between gap-2">
+      <a href="/" class="grid place-items-center w-9 h-9 rounded-full bg-white/10" aria-label="Cambiar rol"><Icon name="swap" class="w-4 h-4" /></a>
+      <span class="chip bg-white/10 text-white"><Icon name="truck" class="w-3.5 h-3.5" /> Empresa recicladora</span>
+    </div>
+    <p class="relative z-10 mt-6 text-white/70 text-sm">Red de acopio</p>
+    <h1 class="relative z-10 text-2xl font-extrabold tracking-tight">Panel de impacto</h1>
+  </header>
+
+  <main class="sheet-body">
+    <!-- PANEL -->
+    <section data-view="panel">
+      <div class="balance-card">
+        <span class="relative text-sm font-semibold text-white/85">Aceite que no llegó al drenaje</span>
+        <p class="relative mt-1 flex items-baseline gap-2">
+          <span id="k-total" class="text-5xl font-extrabold tracking-tight tabular-nums">0</span>
+          <span class="text-lg font-bold text-white/80">L</span>
+        </p>
+        <p class="relative mt-1 text-xs text-white/80"><Icon name="leaf" class="w-3.5 h-3.5 inline -mt-0.5" /> <span id="k-agua">0</span> L de agua protegidos</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mt-4">
+        <div class="card"><p class="text-[11px] font-bold text-gray-500">En tiendas ahora</p><p class="text-2xl font-extrabold"><span id="k-bidones">0</span> <span class="text-sm">L</span></p></div>
+        <div class="card"><p class="text-[11px] font-bold text-gray-500">Ya recolectado</p><p class="text-2xl font-extrabold"><span id="k-recolectado">0</span> <span class="text-sm">L</span></p></div>
+        <div class="card"><p class="text-[11px] font-bold text-gray-500">Ciudadanos</p><p id="k-usuarios" class="text-2xl font-extrabold">0</p></div>
+        <div class="card"><p class="text-[11px] font-bold text-gray-500">Puntos en circulación</p><p id="k-puntos" class="text-2xl font-extrabold">0</p></div>
+        <div class="card"><p class="text-[11px] font-bold text-gray-500">Pagado a tiendas</p><p class="text-2xl font-extrabold text-emerald-600">$<span id="k-pago">0</span></p></div>
+        <div class="card"><p class="text-[11px] font-bold text-gray-500">Para jabón (<span id="k-pct">20</span>%)</p><p class="text-2xl font-extrabold"><span id="k-jabon">0</span> <span class="text-sm">L</span></p></div>
+      </div>
+
+      <h2 class="section-title">Recolecciones pendientes <span id="k-pend" class="chip bg-gold-400 text-plum-900"></span></h2>
+      <div id="pendientes" class="space-y-3"></div>
+    </section>
+
+    <!-- TIENDAS -->
+    <section data-view="tiendas" class="hidden">
+      <h2 class="section-title !mt-0">Ranking de tiendas</h2>
+      <div id="ranking" class="card space-y-4"></div>
+      <h2 class="section-title">Nivel de bidones</h2>
+      <div id="bidones" class="card space-y-3"></div>
+    </section>
+
+    <!-- SORTEOS -->
+    <section data-view="sorteos" class="hidden">
+      <h2 class="section-title !mt-0">Sorteos</h2>
+      <div id="r-sorteos" class="space-y-3"></div>
+      <p class="mt-4 text-xs text-gray-500 px-1">Los sorteos se financian con la venta del aceite. Verificar requisitos legales de sorteos promocionales en El Salvador.</p>
+    </section>
+
+    <!-- AJUSTES -->
+    <section data-view="ajustes" class="hidden">
+      <h2 class="section-title !mt-0">Reglas del programa</h2>
+      <form id="f-reglas" class="card space-y-3">
+        {reglas.map(r => (
+          <label class="flex items-center justify-between gap-3">
+            <span class="text-sm font-semibold text-plum-900 flex-1">{r.label}</span>
+            <span class="flex items-center gap-1.5">
+              <input name={r.k} type="number" min="0" step={r.step ?? '1'} class="field !w-24 !py-2 text-right" />
+              <span class="text-xs font-bold text-gray-400 w-8">{r.suf}</span>
+            </span>
+          </label>
+        ))}
+        <button class="btn btn-primary w-full" type="submit"><Icon name="check" /> Guardar reglas</button>
+      </form>
+
+      <h2 class="section-title">Datos de la demo</h2>
+      <div class="card space-y-2">
+        <p class="text-xs text-gray-500">Los datos se guardan en este navegador (localStorage). Exporta el JSON para pasarlo a otro equipo.</p>
+        <button id="b-export" type="button" class="btn btn-soft w-full"><Icon name="download" /> Exportar JSON</button>
+        <label class="btn btn-soft w-full cursor-pointer"><Icon name="upload" /> Importar JSON<input id="b-import" type="file" accept="application/json,.json" class="sr-only" /></label>
+        <button id="b-reset" type="button" class="btn w-full bg-red-50 text-red-600"><Icon name="refresh" /> Reiniciar datos de ejemplo</button>
+      </div>
+    </section>
+  </main>
+
+  <Fragment slot="sheets">
+    <Sheet id="sh-ganador" title="¡Tenemos ganador!">
+      <div id="ganador-body" class="text-center"></div>
+      <button type="button" class="btn btn-dark w-full mt-5" data-close>Cerrar</button>
+    </Sheet>
+  </Fragment>
+</App>
+
+<script>
+  import { load, save, reset, exportJSON, importJSON, tienda, usuario, marcarRecolectada, realizarSorteo, fmtNum } from '../lib/store';
+  import { $, esc, initTabs, toast, intentar, openSheet } from '../lib/ui';
+  import { icon } from '../lib/icons';
+
+  let db = load();
+
+  function render() {
+    db = load();
+    const R = db.reglas;
+    // Todo el aceite aceptado está o en un bidón o ya fue recolectado.
+    const recolectado = db.recolecciones.reduce((s, r) => s + r.litros, 0);
+    const enTiendas = db.tiendas.reduce((s, t) => s + t.litrosBidon, 0);
+    const entregado = recolectado + enTiendas;
+
+    $('#k-total').textContent = fmtNum(entregado);
+    $('#k-agua').textContent = fmtNum(entregado * R.litrosAguaPorLitroAceite);
+    $('#k-bidones').textContent = fmtNum(enTiendas);
+    $('#k-recolectado').textContent = fmtNum(recolectado);
+    $('#k-usuarios').textContent = String(db.usuarios.length);
+    $('#k-puntos').textContent = fmtNum(db.usuarios.reduce((s, u) => s + u.puntos, 0));
+    $('#k-pago').textContent = db.recolecciones.reduce((s, r) => s + r.pagoUSD, 0).toFixed(2);
+    $('#k-pct').textContent = String(R.porcentajeProyecto);
+    $('#k-jabon').textContent = fmtNum(recolectado * R.porcentajeProyecto / 100);
+
+    // Pendientes
+    const pend = db.tiendas.filter(t => t.recoleccionSolicitada);
+    $('#k-pend').textContent = String(pend.length);
+    $('#pendientes').innerHTML = pend.length ? pend.map(t => `<div class="card flex items-center gap-3">
+        <span class="grid place-items-center w-11 h-11 rounded-2xl bg-gold-300/50 text-plum-900 shrink-0">${icon('truck')}</span>
+        <div class="flex-1 min-w-0"><p class="font-bold text-sm truncate">${esc(t.nombre)}</p>
+          <p class="text-xs text-gray-500">${esc(t.zona)} · <b class="text-plum-900">${fmtNum(t.litrosBidon)} L</b> · pago $${(t.litrosBidon * R.pagoTiendaPorLitroUSD).toFixed(2)}</p></div>
+        <button type="button" class="btn btn-primary btn-sm" data-recolectar="${t.id}">${icon('check', 'w-4 h-4')} Recolectado</button>
+      </div>`).join('') : '<div class="card text-center text-sm text-gray-400 py-6">Sin recolecciones pendientes 🎉</div>';
+
+    // Ranking por litros entregados
+    const porTienda = db.tiendas.map(t => ({
+      t, litros: t.litrosBidon + db.recolecciones.filter(r => r.tiendaId === t.id).reduce((s, r) => s + r.litros, 0),
+    })).sort((a, b) => b.litros - a.litros);
+    const max = Math.max(1, ...porTienda.map(x => x.litros));
+    $('#ranking').innerHTML = porTienda.map((x, i) => `<div>
+        <div class="flex justify-between text-sm font-bold"><span>${['🥇', '🥈', '🥉'][i] ?? '▫️'} ${esc(x.t.nombre)}</span><span class="tabular-nums">${fmtNum(x.litros)} L</span></div>
+        <div class="mt-1.5 h-2.5 rounded-full bg-plum-50 overflow-hidden"><span class="block h-full rounded-full bg-magenta-500" style="width:${x.litros / max * 100}%"></span></div>
+        <p class="text-[11px] text-gray-500 mt-1">${esc(x.t.zona)}</p></div>`).join('');
+
+    $('#bidones').innerHTML = db.tiendas.map(t => {
+      const pct = Math.round(t.litrosBidon / R.capacidadBidonTienda * 100);
+      const c = pct >= R.alertaBidonPorcentaje ? 'bg-red-500' : pct >= 50 ? 'bg-gold-400' : 'bg-emerald-500';
+      return `<div class="flex items-center gap-3"><span class="text-sm font-semibold flex-1 truncate">${esc(t.nombre)}</span>
+        <div class="w-28 h-2.5 rounded-full bg-plum-50 overflow-hidden"><span class="block h-full ${c}" style="width:${Math.min(100, pct)}%"></span></div>
+        <span class="text-xs font-bold w-10 text-right tabular-nums">${pct}%</span></div>`;
+    }).join('');
+
+    // Sorteos
+    $('#r-sorteos').innerHTML = db.sorteos.map(s => {
+      const g = s.ganadorId ? usuario(db, s.ganadorId) : null;
+      const unicos = new Set(s.boletos).size;
+      return `<div class="card">
+        <div class="flex items-center gap-3">
+          <span class="grid place-items-center w-14 h-14 rounded-2xl bg-gold-300/40 text-3xl">${s.emoji}</span>
+          <div class="flex-1"><p class="font-extrabold">${esc(s.premio)}</p>
+            <p class="text-xs text-gray-500">${s.boletos.length} boletos · ${unicos} participantes · ${s.costoBoleto} pts c/u</p></div>
+        </div>
+        ${g ? `<p class="mt-3 rounded-2xl bg-emerald-50 text-emerald-700 text-sm font-bold p-3">🏆 Ganador: ${esc(g.nombre)} (${g.codigo})</p>`
+            : `<button type="button" class="btn btn-dark w-full mt-3" data-sortear="${s.id}" ${s.boletos.length ? '' : 'disabled'}>${icon('trophy', 'w-4 h-4')} Realizar sorteo</button>`}
+      </div>`;
+    }).join('');
+
+    // Reglas
+    const f = $<HTMLFormElement>('#f-reglas');
+    for (const [k, v] of Object.entries(R)) {
+      const input = f.elements.namedItem(k) as HTMLInputElement | null;
+      if (input) input.value = String(v);
+    }
+  }
+
+  document.addEventListener('click', e => {
+    const el = e.target as HTMLElement;
+    const rec = el.closest<HTMLElement>('[data-recolectar]');
+    if (rec) {
+      const t = tienda(db, rec.dataset.recolectar!)!;
+      const litros = t.litrosBidon;
+      const pago = marcarRecolectada(db, t.id);
+      toast(`${fmtNum(litros)} L recolectados en ${t.nombre} · pago $${pago?.toFixed(2)}`);
+      render();
+    }
+    const so = el.closest<HTMLElement>('[data-sortear]');
+    if (so) {
+      const g = intentar(() => realizarSorteo(db, so.dataset.sortear!));
+      if (!g) return;
+      const s = db.sorteos.find(x => x.id === so.dataset.sortear)!;
+      $('#ganador-body').innerHTML = `<div class="pop text-7xl">${s.emoji}</div>
+        <p class="mt-3 text-sm text-gray-500">${esc(s.premio)}</p>
+        <p class="mt-1 text-2xl font-extrabold text-magenta-600">${esc(g.nombre)}</p>
+        <p class="font-mono text-sm text-gray-500">${g.codigo}${g.telefono ? ' · ' + esc(g.telefono) : ''}</p>`;
+      openSheet('sh-ganador');
+      render();
+    }
+  });
+
+  $('#f-reglas').addEventListener('submit', e => {
+    e.preventDefault();
+    const f = e.target as HTMLFormElement;
+    for (const k of Object.keys(db.reglas) as (keyof typeof db.reglas)[]) {
+      const input = f.elements.namedItem(k) as HTMLInputElement | null;
+      if (input && input.value !== '') db.reglas[k] = Number(input.value);
+    }
+    save(db);
+    toast('Reglas guardadas');
+    render();
+  });
+
+  $('#b-export').addEventListener('click', () => exportJSON(db));
+  $<HTMLInputElement>('#b-import').addEventListener('change', async e => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    try { await importJSON(file); toast('Datos importados'); render(); }
+    catch (err) { toast((err as Error).message, 'error'); }
+  });
+  $('#b-reset').addEventListener('click', () => {
+    if (!confirm('¿Reiniciar todos los datos a los valores de ejemplo?')) return;
+    reset(); toast('Datos reiniciados'); render();
+  });
+
+  initTabs();
+  render();
+</script>
